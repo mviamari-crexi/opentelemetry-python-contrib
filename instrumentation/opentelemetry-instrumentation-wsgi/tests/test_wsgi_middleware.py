@@ -1,16 +1,5 @@
 # Copyright The OpenTelemetry Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=too-many-lines
 
@@ -203,6 +192,8 @@ _recommended_metrics_attrs_both = {
     "http.server.duration": _server_duration_attrs_old,
     "http.server.request.duration": _server_duration_attrs_new,
 }
+
+SCOPE = "opentelemetry.instrumentation.wsgi"
 
 
 class TestWsgiApplication(WsgiTestBase):
@@ -430,7 +421,7 @@ class TestWsgiApplication(WsgiTestBase):
         number_data_point_seen = False
         histogram_data_point_seen = False
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertTrue(len(metrics) > 0)
         for metric in metrics:
             self.assertIn(metric.name, _expected_metric_names_old)
@@ -494,7 +485,7 @@ class TestWsgiApplication(WsgiTestBase):
         number_data_point_seen = False
         histogram_data_point_seen = False
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertTrue(len(metrics) != 0)
         for metric in metrics:
             self.assertIn(metric.name, _expected_metric_names_new)
@@ -525,7 +516,7 @@ class TestWsgiApplication(WsgiTestBase):
         number_data_point_seen = False
         histogram_data_point_seen = False
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertTrue(len(metrics) != 0)
         for metric in metrics:
             if metric.unit == "ms":

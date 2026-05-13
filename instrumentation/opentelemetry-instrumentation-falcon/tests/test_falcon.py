@@ -1,16 +1,5 @@
 # Copyright The OpenTelemetry Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 #
 from timeit import default_timer
 from unittest.mock import Mock, patch
@@ -118,6 +107,9 @@ _recommended_metrics_attrs_both = {
 }
 
 _parsed_falcon_version = package_version.parse(_falcon_version)
+
+
+SCOPE = "opentelemetry.instrumentation.falcon"
 
 
 class TestFalconBase(TestBase):
@@ -487,7 +479,7 @@ class TestFalconInstrumentation(TestFalconBase, WsgiTestBase):
             self.assertFalse(mock_span.set_attribute.called)
             self.assertFalse(mock_span.set_status.called)
 
-            metrics = self.get_sorted_metrics()
+            metrics = self.get_sorted_metrics(SCOPE)
             self.assertTrue(len(metrics) != 0)
             for metric in metrics:
                 data_points = list(metric.data.data_points)
@@ -519,7 +511,7 @@ class TestFalconInstrumentation(TestFalconBase, WsgiTestBase):
         self.client().simulate_get("/hello/756")
         self.client().simulate_get("/hello/756")
         self.client().simulate_get("/hello/756")
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         number_data_point_seen = False
         histogram_data_point_seen = False
         self.assertTrue(len(metrics) != 0)
@@ -545,7 +537,7 @@ class TestFalconInstrumentation(TestFalconBase, WsgiTestBase):
         self.client().simulate_get("/hello/756")
         duration = max(default_timer() - start, 0)
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         for metric in metrics:
             data_points = list(metric.data.data_points)
             self.assertEqual(len(data_points), 1)
@@ -577,7 +569,7 @@ class TestFalconInstrumentation(TestFalconBase, WsgiTestBase):
         self.client().simulate_get("/hello/756")
         duration_s = default_timer() - start
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
 
         # pylint: disable=too-many-nested-blocks
         for metric in metrics:
@@ -626,7 +618,7 @@ class TestFalconInstrumentation(TestFalconBase, WsgiTestBase):
         self.client().simulate_get("/hello/756")
         duration = max(round((default_timer() - start) * 1000), 0)
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         for metric in metrics:
             data_points = list(metric.data.data_points)
             self.assertEqual(len(data_points), 1)
@@ -650,7 +642,7 @@ class TestFalconInstrumentation(TestFalconBase, WsgiTestBase):
         self.client().simulate_request(method="POST", path="/hello/756")
         FalconInstrumentor().uninstrument()
         self.client().simulate_request(method="POST", path="/hello/756")
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         for metric in metrics:
             for point in list(metric.data.data_points):
                 if isinstance(point, HistogramDataPoint):

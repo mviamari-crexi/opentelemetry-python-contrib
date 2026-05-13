@@ -1,16 +1,5 @@
 # Copyright The OpenTelemetry Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=too-many-lines
 
@@ -102,6 +91,9 @@ class InvalidResponseObjectException(Exception):
         self.response = {}
 
 
+SCOPE = "opentelemetry.instrumentation.requests"
+
+
 class RequestsIntegrationTestBase(abc.ABC):
     # pylint: disable=no-member
     # pylint: disable=too-many-public-methods
@@ -185,7 +177,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 HTTP_METHOD: "GET",
                 HTTP_URL: self.URL,
                 HTTP_STATUS_CODE: 200,
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
 
@@ -222,7 +214,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 NETWORK_PROTOCOL_VERSION: "1.1",
                 SERVER_PORT: 80,
                 NETWORK_PEER_PORT: 80,
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
 
@@ -265,7 +257,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 NETWORK_PROTOCOL_VERSION: "1.1",
                 SERVER_PORT: 80,
                 NETWORK_PEER_PORT: 80,
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
 
@@ -289,7 +281,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 HTTP_METHOD: "_OTHER",
                 HTTP_URL: self.URL,
                 HTTP_STATUS_CODE: 405,
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
 
@@ -314,7 +306,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 NETWORK_PROTOCOL_VERSION: "1.1",
                 ERROR_TYPE: "405",
                 HTTP_REQUEST_METHOD_ORIGINAL: "NONSTANDARD",
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
         self.assertIs(span.status.status_code, trace.StatusCode.ERROR)
@@ -549,7 +541,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 HTTP_URL: self.URL,
                 HTTP_STATUS_CODE: 200,
                 "http.response.body": "Hello!",
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
 
@@ -580,7 +572,7 @@ class RequestsIntegrationTestBase(abc.ABC):
             {
                 HTTP_METHOD: "GET",
                 HTTP_URL: self.URL,
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
         self.assertEqual(span.status.status_code, StatusCode.ERROR)
@@ -608,7 +600,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 NETWORK_PEER_PORT: 80,
                 NETWORK_PEER_ADDRESS: "mock",
                 ERROR_TYPE: "RequestException",
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
         self.assertEqual(span.status.status_code, StatusCode.ERROR)
@@ -631,7 +623,7 @@ class RequestsIntegrationTestBase(abc.ABC):
             {
                 HTTP_METHOD: "GET",
                 HTTP_URL: self.URL,
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
         self.assertEqual(span.status.status_code, StatusCode.ERROR)
@@ -655,7 +647,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 HTTP_METHOD: "GET",
                 HTTP_URL: self.URL,
                 HTTP_STATUS_CODE: 500,
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
         self.assertEqual(span.status.status_code, StatusCode.ERROR)
@@ -695,7 +687,7 @@ class RequestsIntegrationTestBase(abc.ABC):
                 "http.method": "GET",
                 "http.url": self.URL,
                 "http.status_code": 210,
-                USER_AGENT_ORIGINAL: "python-requests/2.32.3",
+                USER_AGENT_ORIGINAL: f"python-requests/{requests.__version__}",
             },
         )
 
@@ -1008,7 +1000,7 @@ class TestRequestsIntergrationMetric(TestBase):
             HTTP_SCHEME: "http",
         }
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 1)
         for metric in metrics:
             self.assertEqual(metric.unit, "ms")
@@ -1036,7 +1028,7 @@ class TestRequestsIntergrationMetric(TestBase):
             HTTP_REQUEST_METHOD: "GET",
             NETWORK_PROTOCOL_VERSION: "1.1",
         }
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 1)
         for metric in metrics:
             self.assertEqual(metric.unit, "s")
@@ -1074,7 +1066,7 @@ class TestRequestsIntergrationMetric(TestBase):
             NETWORK_PROTOCOL_VERSION: "1.1",
         }
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 2)
         for metric in metrics:
             for data_point in metric.data.data_points:
@@ -1145,7 +1137,7 @@ class TestRequestsIntergrationMetric(TestBase):
             self.assertTrue(mock_span.is_recording.called)
             self.assertFalse(mock_span.set_attribute.called)
             self.assertFalse(mock_span.set_status.called)
-            metrics = self.get_sorted_metrics()
+            metrics = self.get_sorted_metrics(SCOPE)
             self.assertEqual(len(metrics), 1)
             duration_data_point = metrics[0].data.data_points[0]
             self.assertDictEqual(

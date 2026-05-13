@@ -1,16 +1,5 @@
 # Copyright The OpenTelemetry Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 """
 Instrument confluent-kafka-python to report instrumentation-confluent-kafka produced and consumed messages
@@ -127,7 +116,27 @@ from .utils import (
 from .version import __version__
 
 
+def _capture_config(args, kwargs):
+    """Return the config dict that was passed to a Producer/Consumer
+    constructor, regardless of whether it was supplied positionally, as
+    ``conf=`` kwarg, or (for Consumer) expanded as **kwargs."""
+    if args and isinstance(args[0], dict):
+        return args[0]
+    conf = kwargs.get("conf")
+    if isinstance(conf, dict):
+        return conf
+    # confluent_kafka.Consumer also supports Consumer(**conf) — in that case
+    # the kwargs themselves are the config.
+    if kwargs:
+        return dict(kwargs)
+    return None
+
+
 class AutoInstrumentedProducer(Producer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.config = _capture_config(args, kwargs)
+
     # This method is deliberately implemented in order to allow wrapt to wrap this function
     def produce(self, topic, value=None, *args, **kwargs):  # pylint: disable=keyword-arg-before-vararg,useless-super-delegation
         super().produce(topic, value, *args, **kwargs)
@@ -136,6 +145,7 @@ class AutoInstrumentedProducer(Producer):
 class AutoInstrumentedConsumer(Consumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.config = _capture_config(args, kwargs)
         self._current_consume_span = None
 
     # This method is deliberately implemented in order to allow wrapt to wrap this function
@@ -155,6 +165,10 @@ class ProxiedProducer(Producer):
     def __init__(self, producer: Producer, tracer: Tracer):
         self._producer = producer
         self._tracer = tracer
+        # Surface the wrapped producer's config (if any) so that
+        # KafkaPropertiesExtractor.extract_bootstrap_servers can read it
+        # through this proxy.
+        self.config = getattr(producer, "config", None)
 
     def flush(self, timeout=-1):
         return self._producer.flush(timeout)
@@ -184,6 +198,8 @@ class ProxiedConsumer(Consumer):
         self._tracer = tracer
         self._current_consume_span = None
         self._current_context_token = None
+        # See ProxiedProducer.__init__ for rationale.
+        self.config = getattr(consumer, "config", None)
 
     def close(self, *args, **kwargs):
         return ConfluentKafkaInstrumentor.wrap_close(
@@ -230,7 +246,6 @@ class ConfluentKafkaInstrumentor(BaseInstrumentor):
     See `BaseInstrumentor`
     """
 
-    # pylint: disable=attribute-defined-outside-init
     @staticmethod
     def instrument_producer(
         producer: Producer, tracer_provider=None
@@ -277,6 +292,9 @@ class ConfluentKafkaInstrumentor(BaseInstrumentor):
         return _instruments
 
     def _instrument(self, **kwargs):
+        # TODO: should probably wrap methods directly instead of going through
+        # these classes. Hopefully it'll make the patching work if called after
+        # the original classes have already been imported,  #4270
         self._original_kafka_producer = confluent_kafka.Producer
         self._original_kafka_consumer = confluent_kafka.Consumer
 
@@ -364,11 +382,15 @@ class ConfluentKafkaInstrumentor(BaseInstrumentor):
             name=span_name,
             kind=trace.SpanKind.PRODUCER,
         ) as span:
+            bootstrap_servers = (
+                KafkaPropertiesExtractor.extract_bootstrap_servers(instance)
+            )
             _enrich_span(
                 span,
                 topic,
                 partition=partition,
                 operation=MessagingOperationTypeValues.SEND,
+                bootstrap_servers=bootstrap_servers,
             )
             propagate.inject(
                 headers,
@@ -396,6 +418,9 @@ class ConfluentKafkaInstrumentor(BaseInstrumentor):
 
         # create a new span for the message
         if record:
+            bootstrap_servers = (
+                KafkaPropertiesExtractor.extract_bootstrap_servers(instance)
+            )
             _create_new_consume_span(instance, tracer, [record])
             _enrich_span(
                 instance._current_consume_span,
@@ -403,11 +428,12 @@ class ConfluentKafkaInstrumentor(BaseInstrumentor):
                 partition=record.partition(),
                 offset=record.offset(),
                 operation=MessagingOperationTypeValues.PROCESS,
+                bootstrap_servers=bootstrap_servers,
             )
 
-        instance._current_context_token = context.attach(
-            trace.set_span_in_context(instance._current_consume_span)
-        )
+            instance._current_context_token = context.attach(
+                trace.set_span_in_context(instance._current_consume_span)
+            )
 
         return record
 
@@ -430,6 +456,9 @@ class ConfluentKafkaInstrumentor(BaseInstrumentor):
         records = func(*args, **kwargs)
 
         if len(records) > 0:
+            bootstrap_servers = (
+                KafkaPropertiesExtractor.extract_bootstrap_servers(instance)
+            )
             _create_new_consume_span(instance, tracer, records)
             _enrich_span(
                 instance._current_consume_span,
@@ -437,11 +466,12 @@ class ConfluentKafkaInstrumentor(BaseInstrumentor):
                 partition=records[0].partition(),
                 offset=records[0].offset(),
                 operation=MessagingOperationTypeValues.PROCESS,
+                bootstrap_servers=bootstrap_servers,
             )
 
-        instance._current_context_token = context.attach(
-            trace.set_span_in_context(instance._current_consume_span)
-        )
+            instance._current_context_token = context.attach(
+                trace.set_span_in_context(instance._current_consume_span)
+            )
 
         return records
 

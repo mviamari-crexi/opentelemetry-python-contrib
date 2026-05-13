@@ -1,16 +1,5 @@
 # Copyright The OpenTelemetry Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import io
 from timeit import default_timer
@@ -29,6 +18,8 @@ from opentelemetry.instrumentation._semconv import (
 from opentelemetry.instrumentation.urllib3 import URLLib3Instrumentor
 from opentelemetry.test.httptest import HttpTestBase
 from opentelemetry.test.test_base import TestBase
+
+SCOPE = "opentelemetry.instrumentation.urllib3"
 
 
 class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
@@ -73,9 +64,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
         start_time = default_timer()
         response = self.pool.request("GET", self.HTTP_URL)
         duration_ms = max(round((default_timer() - start_time) * 1000), 0)
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 3)
 
         (
@@ -145,9 +134,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
         response = self.pool.request("GET", self.HTTP_URL)
         duration_s = max(default_timer() - start_time, 0)
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 3)
         (
             client_request_size,
@@ -220,9 +207,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
         duration = max(round(duration_s * 1000), 0)
         expected_size = len(response.data)
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 6)
 
         (
@@ -359,9 +344,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
         response = self.pool.request("NONSTANDARD", self.HTTP_URL)
         duration_ms = max(round((default_timer() - start_time) * 1000), 0)
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
 
         (
             client_duration,
@@ -434,9 +417,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
         response = self.pool.request("NONSTANDARD", self.HTTP_URL)
         duration_s = max(default_timer() - start_time, 0)
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
 
         (
             client_request_size,
@@ -506,9 +487,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
     def test_str_request_body_size_metrics(self):
         self.pool.request("POST", self.HTTP_URL, body="foobar")
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         (_, client_request_size, _) = metrics
 
         self.assertEqual(client_request_size.name, "http.client.request.size")
@@ -542,9 +521,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
 
         for metrics in resource_metrics:
             scope_metrics_list = [
-                sm
-                for sm in metrics.scope_metrics
-                if sm.scope.name == "opentelemetry.instrumentation.urllib3"
+                sm for sm in metrics.scope_metrics if sm.scope.name == SCOPE
             ]
             for scope_metrics in scope_metrics_list:
                 self.assertEqual(
@@ -555,9 +532,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
     def test_bytes_request_body_size_metrics(self):
         self.pool.request("POST", self.HTTP_URL, body=b"foobar")
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         (_, client_request_size, _) = metrics
 
         self.assertEqual(client_request_size.name, "http.client.request.size")
@@ -585,9 +560,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
     def test_fields_request_body_size_metrics(self):
         self.pool.request("POST", self.HTTP_URL, fields={"foo": "bar"})
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         (_, client_request_size, _) = metrics
 
         self.assertEqual(client_request_size.name, "http.client.request.size")
@@ -616,9 +589,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
     def test_bytesio_request_body_size_metrics(self):
         self.pool.request("POST", self.HTTP_URL, body=io.BytesIO(b"foobar"))
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         (_, client_request_size, _) = metrics
 
         self.assertEqual(client_request_size.name, "http.client.request.size")
@@ -648,9 +619,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
             "POST", self.HTTP_URL, body=(b for b in (b"foo", b"bar"))
         )
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 2)
         self.assertNotIn("http.client.request.size", [m.name for m in metrics])
 
@@ -659,9 +628,7 @@ class TestURLLib3InstrumentorMetric(HttpTestBase, TestBase):
         URLLib3Instrumentor().uninstrument()
         self.pool.request("GET", self.HTTP_URL)
 
-        metrics = self.get_sorted_metrics(
-            scope="opentelemetry.instrumentation.urllib3"
-        )
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 3)
 
         for metric in metrics:

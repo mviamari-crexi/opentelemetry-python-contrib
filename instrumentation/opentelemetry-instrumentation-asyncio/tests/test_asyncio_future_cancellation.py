@@ -1,3 +1,6 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
 import asyncio
 from unittest.mock import patch
 
@@ -7,6 +10,8 @@ from opentelemetry.instrumentation.asyncio.environment_variables import (
 )
 from opentelemetry.test.test_base import TestBase
 from opentelemetry.trace import get_tracer
+
+SCOPE = "opentelemetry.instrumentation.asyncio"
 
 
 class TestTraceFuture(TestBase):
@@ -41,7 +46,7 @@ class TestTraceFuture(TestBase):
         self.assertEqual(spans[0].name, "root")
         self.assertEqual(spans[1].name, "asyncio future")
 
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         self.assertEqual(len(metrics), 2)
 
         self.assertEqual(metrics[0].name, "asyncio.process.created")

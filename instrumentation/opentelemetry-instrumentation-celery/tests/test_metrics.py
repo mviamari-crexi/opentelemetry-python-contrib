@@ -1,3 +1,6 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
 import threading
 import time
 from platform import python_implementation
@@ -9,6 +12,8 @@ from opentelemetry.instrumentation.celery import CeleryInstrumentor
 from opentelemetry.test.test_base import TestBase
 
 from .celery_test_tasks import app, task_add
+
+SCOPE = "opentelemetry.instrumentation.celery"
 
 
 class TestMetrics(TestBase):
@@ -34,7 +39,7 @@ class TestMetrics(TestBase):
             if time.time() > timeout:
                 break
             time.sleep(0.05)
-        return self.get_sorted_metrics()
+        return self.get_sorted_metrics(SCOPE)
 
     def test_basic_metric(self):
         CeleryInstrumentor().instrument()

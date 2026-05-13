@@ -1,16 +1,5 @@
-# Copyright 2020, OpenTelemetry Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
 
 """
 The opentelemetry-instrumentation-aiohttp-server package allows tracing HTTP
@@ -199,12 +188,10 @@ from opentelemetry.semconv._incubating.attributes.http_attributes import (
     HTTP_SERVER_NAME,
     HTTP_URL,
 )
-from opentelemetry.semconv.attributes.error_attributes import ERROR_TYPE
 from opentelemetry.semconv.metrics import MetricInstruments
 from opentelemetry.semconv.metrics.http_metrics import (
     HTTP_SERVER_REQUEST_DURATION,
 )
-from opentelemetry.trace.status import Status, StatusCode
 from opentelemetry.util.http import (
     OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SANITIZE_FIELDS,
     OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST,
@@ -254,14 +241,21 @@ def _parse_duration_attrs(
 
 
 def get_default_span_name(request: web.Request) -> str:
-    """Default implementation for get_default_span_details
+    """Returns the span name.
     Args:
         request: the request object itself.
     Returns:
-        The span name.
+        The span name as "{method} {canonical_name}" of a resource if possible or just "{method}".
     """
-    span_name = request.path.strip() or f"HTTP {request.method}"
-    return span_name
+    try:
+        resource = request.match_info.route.resource
+        path = resource.canonical
+    except AttributeError:
+        path = ""
+
+    if path:
+        return f"{request.method} {path}"
+    return f"{request.method}"
 
 
 def _get_view_func(request: web.Request) -> str:
@@ -389,25 +383,21 @@ def set_status_code(
     if duration_attrs is None:
         duration_attrs = {}
 
+    status_code_str = str(status_code)
+
     try:
         status_code_int = int(status_code)
-        status_code_str = str(status_code)
     except ValueError:
-        span.set_status(
-            Status(
-                StatusCode.ERROR,
-                "Non-integer HTTP status: " + repr(status_code),
-            )
-        )
-    else:
-        _set_status(
-            span,
-            duration_attrs,
-            status_code_int,
-            status_code_str,
-            server_span=True,
-            sem_conv_opt_in_mode=sem_conv_opt_in_mode,
-        )
+        status_code_int = -1
+
+    _set_status(
+        span,
+        duration_attrs,
+        status_code_int,
+        status_code_str,
+        server_span=True,
+        sem_conv_opt_in_mode=sem_conv_opt_in_mode,
+    )
 
 
 class AiohttpGetter(Getter):
@@ -469,6 +459,8 @@ def create_aiohttp_middleware(
             context=extract(request, getter=getter),
             kind=trace.SpanKind.SERVER,
             attributes=request_attrs,
+            set_status_on_exception=False,
+            record_exception=False,
         ) as span:
             if span.is_recording():
                 span.set_attributes(
@@ -489,17 +481,31 @@ def create_aiohttp_middleware(
                         collect_response_headers_attributes(resp)
                     )
                     span.set_attributes(response_headers_attributes)
-            except web.HTTPException as ex:
-                if _report_new(_sem_conv_opt_in_mode):
-                    request_attrs[ERROR_TYPE] = type(ex).__qualname__
-                    if span.is_recording():
-                        span.set_attribute(ERROR_TYPE, type(ex).__qualname__)
+            except web.HTTPServerError as ex:
                 set_status_code(
                     span,
                     ex.status_code,
                     request_attrs,
                     _sem_conv_opt_in_mode,
                 )
+                span.record_exception(ex)
+                raise
+            except web.HTTPException as ex:
+                set_status_code(
+                    span,
+                    ex.status_code,
+                    request_attrs,
+                    _sem_conv_opt_in_mode,
+                )
+                raise
+            except Exception as ex:
+                set_status_code(
+                    span,
+                    type(ex).__qualname__,
+                    request_attrs,
+                    _sem_conv_opt_in_mode,
+                )
+                span.record_exception(ex)
                 raise
             finally:
                 duration_s = default_timer() - start
@@ -544,7 +550,7 @@ def create_instrumented_application(
 
 
 class AioHttpServerInstrumentor(BaseInstrumentor):
-    # pylint: disable=protected-access,attribute-defined-outside-init
+    # pylint: disable=protected-access
     """An instrumentor for aiohttp.web.Application
 
     See `BaseInstrumentor`

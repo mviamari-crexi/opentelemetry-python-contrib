@@ -1,16 +1,5 @@
 # Copyright The OpenTelemetry Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=too-many-lines
 from timeit import default_timer
@@ -145,6 +134,8 @@ _recommended_metrics_attrs_both = {
     "http.server.duration": _server_duration_attrs_old_copy,
     "http.server.request.duration": _server_duration_attrs_new_copy,
 }
+
+SCOPE = "opentelemetry.instrumentation.flask"
 
 
 # pylint: disable=too-many-public-methods
@@ -497,7 +488,7 @@ class TestProgrammatic(InstrumentationTest, WsgiTestBase):
         self.client.get("/hello/321")
         self.client.get("/hello/756")
         duration = max(round((default_timer() - start) * 1000), 0)
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         number_data_point_seen = False
         histogram_data_point_seen = False
         self.assertTrue(len(metrics) != 0)
@@ -525,7 +516,7 @@ class TestProgrammatic(InstrumentationTest, WsgiTestBase):
         self.client.get("/hello/321")
         self.client.get("/hello/756")
         duration_s = max(default_timer() - start, 0)
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         number_data_point_seen = False
         histogram_data_point_seen = False
         self.assertTrue(len(metrics) != 0)
@@ -557,7 +548,7 @@ class TestProgrammatic(InstrumentationTest, WsgiTestBase):
         self.client.post("/hello/756")
         self.client.post("/hello/756")
         duration = max(round((default_timer() - start) * 1000), 0)
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         for metric in metrics:
             for point in list(metric.data.data_points):
                 if isinstance(point, HistogramDataPoint):
@@ -573,7 +564,7 @@ class TestProgrammatic(InstrumentationTest, WsgiTestBase):
         expected_histogram_explicit_bounds=None,
     ):
         # pylint: disable=too-many-nested-blocks
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         for metric in metrics:
             for point in list(metric.data.data_points):
                 if isinstance(point, HistogramDataPoint):

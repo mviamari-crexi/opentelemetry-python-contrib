@@ -1,16 +1,5 @@
 # Copyright The OpenTelemetry Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=E0611
 # pylint: disable=too-many-lines
@@ -98,6 +87,8 @@ urlpatterns = [
     path("", traced, name="empty"),
 ]
 _django_instrumentor = DjangoInstrumentor()
+
+SCOPE = "opentelemetry.instrumentation.django"
 
 
 # pylint: disable=too-many-public-methods
@@ -737,7 +728,7 @@ class TestMiddleware(WsgiTestBase):
             response = Client().get("/span_name/1234/")
             self.assertEqual(response.status_code, 200)
         duration = max(round((default_timer() - start) * 1000), 0)
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         number_data_point_seen = False
         histrogram_data_point_seen = False
 
@@ -786,7 +777,7 @@ class TestMiddleware(WsgiTestBase):
             response = Client().get("/span_name/1234/")
             self.assertEqual(response.status_code, 200)
         duration_s = default_timer() - start
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         number_data_point_seen = False
         histrogram_data_point_seen = False
 
@@ -855,7 +846,7 @@ class TestMiddleware(WsgiTestBase):
             self.assertEqual(response.status_code, 200)
         duration_s = max(default_timer() - start, 0)
         duration = max(round(duration_s * 1000), 0)
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         number_data_point_seen = False
         histrogram_data_point_seen = False
 
@@ -901,7 +892,7 @@ class TestMiddleware(WsgiTestBase):
         Client().get("/span_name/1234/")
         _django_instrumentor.uninstrument()
         Client().get("/span_name/1234/")
-        metrics = self.get_sorted_metrics()
+        metrics = self.get_sorted_metrics(SCOPE)
         for metric in metrics:
             for point in list(metric.data.data_points):
                 if isinstance(point, HistogramDataPoint):
