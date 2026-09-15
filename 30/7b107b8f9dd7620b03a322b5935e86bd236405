@@ -1,0 +1,43 @@
+instrumentation/opentelemetry-instrumentation-confluent-kafka/src/opentelemetry/instrumentation/confluent_kafka/__init__.py
+  s_540ed8429544ca::t_f7baece8f65930 365
+  s_540ed8429544ca::t_b0bc26cf88dc95 50-51,53-54,56,58-59,61-62,347,356-360,368
+  s_540ed8429544ca::t_44f107ee6237bb 352,366,380-390,392-393,396-405,415-425,427,430-438
+  s_540ed8429544ca::t_4ecd0d4950b07b 349-351
+  s_540ed8429544ca::t_4e4e1cf0085c85 353-354
+  s_540ed8429544ca::t_2cf8bc3b50f56f 439
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/test_instrumentation.py
+  s_540ed8429544ca::t_f8c742189f6b4f 468
+  s_540ed8429544ca::t_9b5d4a8aa8f2ce 164,176,188,229-230,240-241,251-252,364,439-464,472-477
+  s_540ed8429544ca::t_710152fc10b316 465-467
+  s_540ed8429544ca::t_bbacdef8015d7a 469-471
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/test_utils.py
+  s_540ed8429544ca::t_5dec2f409e5c45 1-37
+instrumentation/opentelemetry-instrumentation-confluent-kafka/src/opentelemetry/instrumentation/confluent_kafka/utils.py
+  s_540ed8429544ca::t_8835883f5811bf 23,172-175
+  s_540ed8429544ca::t_2be8ea5fe15273 194
+  s_540ed8429544ca::t_8f5733cf3b59e6 52
+  s_540ed8429544ca::t_44f107ee6237bb 53-56,195
+  s_540ed8429544ca::t_1136f0aaea2982 171
+  s_540ed8429544ca::t_a95f97de801165 193
+  s_540ed8429544ca::t_fbdc79c68dd28d 116,122,178,180-181,184,186
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/utils.py
+  s_540ed8429544ca::t_9934ffb92abb76 71
+.changelog/5066.fixed
+  s_540ed8429544ca::t_424d03b442c33c 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "307b107b8f9dd7620b03a322b5935e86bd236405",
+  "prompts": {},
+  "sessions": {
+    "s_540ed8429544ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f9118a80-c4dc-4000-8baa-6cd9716a0f07",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mviamari-crexi <mviamari@crexi.com>"
+    }
+  }
+}
