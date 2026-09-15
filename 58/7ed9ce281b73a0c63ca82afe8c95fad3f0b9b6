@@ -1,0 +1,48 @@
+instrumentation/opentelemetry-instrumentation-confluent-kafka/src/opentelemetry/instrumentation/confluent_kafka/utils.py
+  s_540ed8429544ca::t_fbdc79c68dd28d 181
+  s_540ed8429544ca::t_a95f97de801165 194
+  s_540ed8429544ca::t_2be8ea5fe15273 195
+  s_540ed8429544ca::t_8835883f5811bf 23,173-175
+  s_540ed8429544ca::t_44f107ee6237bb 53-56
+  s_540ed8429544ca::t_8f5733cf3b59e6 52
+  s_540ed8429544ca::t_1136f0aaea2982 172
+  s_540ed8429544ca::t_63b68851a91ea4 171
+  s_540ed8429544ca::t_d660ce55260aa3 180
+  s_540ed8429544ca::t_9b85d9a4b1e582 193
+  s_540ed8429544ca::t_0452f011fcce37 116,122,178,184,186
+.changelog/5066.fixed
+  s_540ed8429544ca::t_424d03b442c33c 1
+instrumentation/opentelemetry-instrumentation-confluent-kafka/src/opentelemetry/instrumentation/confluent_kafka/__init__.py
+  s_540ed8429544ca::t_b0bc26cf88dc95 50-51,53-54,56,58-59,61-62,347,356-360,368
+  s_540ed8429544ca::t_4ecd0d4950b07b 349-351
+  s_540ed8429544ca::t_f7baece8f65930 365
+  s_540ed8429544ca::t_2cf8bc3b50f56f 438
+  s_540ed8429544ca::t_4e4e1cf0085c85 353-354
+  s_540ed8429544ca::t_44f107ee6237bb 352,366,380-390,392-393,396-405,415-425,427,430-437
+  s_540ed8429544ca::t_c7813cfd054db5 439
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/test_instrumentation.py
+  s_540ed8429544ca::t_bbacdef8015d7a 469-471
+  s_540ed8429544ca::t_710152fc10b316 465-467
+  s_540ed8429544ca::t_f8c742189f6b4f 468
+  s_540ed8429544ca::t_9b5d4a8aa8f2ce 164,176,188,229-230,240-241,251-252,364,439-464,472-477
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/utils.py
+  s_540ed8429544ca::t_9934ffb92abb76 71
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/test_utils.py
+  s_540ed8429544ca::t_5dec2f409e5c45 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "587ed9ce281b73a0c63ca82afe8c95fad3f0b9b6",
+  "prompts": {},
+  "sessions": {
+    "s_540ed8429544ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f9118a80-c4dc-4000-8baa-6cd9716a0f07",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mviamari-crexi <mviamari@crexi.com>"
+    }
+  }
+}
