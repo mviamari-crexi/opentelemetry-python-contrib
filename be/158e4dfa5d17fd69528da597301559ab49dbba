@@ -1,0 +1,19 @@
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/test_instrumentation.py
+  s_1f818eff21b113::t_8dc94d2e907e21 6-7,59-65,549-768
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "be158e4dfa5d17fd69528da597301559ab49dbba",
+  "prompts": {},
+  "sessions": {
+    "s_1f818eff21b113": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "453f1992-2120-4b79-af9c-a6fdb3ad1555",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mviamari-crexi <mviamari@crexi.com>"
+    }
+  }
+}
