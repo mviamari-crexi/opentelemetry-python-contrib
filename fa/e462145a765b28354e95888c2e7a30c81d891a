@@ -1,0 +1,25 @@
+instrumentation/opentelemetry-instrumentation-confluent-kafka/src/opentelemetry/instrumentation/confluent_kafka/__init__.py
+  s_cc989a209cb648::t_188a89c2b4c6e3 435
+.changelog/5066.fixed
+  s_cc989a209cb648::t_188a89c2b4c6e3 1
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/test_utils.py
+  s_cc989a209cb648::t_188a89c2b4c6e3 2
+instrumentation/opentelemetry-instrumentation-confluent-kafka/tests/test_instrumentation.py
+  s_cc989a209cb648::t_188a89c2b4c6e3 89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fae462145a765b28354e95888c2e7a30c81d891a",
+  "prompts": {},
+  "sessions": {
+    "s_cc989a209cb648": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7de5eaa8-3ec1-4887-87fc-023ed3c21656",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "mviamari-crexi <mviamari@crexi.com>"
+    }
+  }
+}
